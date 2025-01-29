@@ -17,6 +17,8 @@ body {
 .container {
     text-align: center;
 }
+
+/* home page buttons */
 .btn-custom {
     width: 90%;
     max-width: 300px;
@@ -28,6 +30,8 @@ body {
     border-color: var(--pale-green);
     color: var(--deep-green);
 }
+
+/* login icon */
 .login-icon {
     position: absolute;
     top: 15px;
