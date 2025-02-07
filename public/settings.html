@@ -1,11 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - PawLight Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Embedded CSS for demonstration. Move these rules to style.css if desired. */
+   
+    body {
+      background: #f4f4f9;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    main {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+  }
+  .content {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+  </style>
 </head>
 <body>
+  <header>
+    <!-- Back button linking to the dashboard -->
+    <a href="/index.html" class="back-btn">Back</a>
+    <h1>Settings</h1>
+  </header>
+  <main>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+<br><br><br>
+    <!-- User Account & Profile -->
+    <section id="user-account">
+      <h2>User Account & Profile</h2>
+      <div class="content">
+        <p><strong>Name:</strong> John Doe</p>
+        <p><strong>Email:</strong> john.doe@example.com</p>
+        <p>Manage your account information and security settings here.</p>
+      </div>
+    </section>
     
+    <!-- System Specs -->
+    <section id="system">
+      <h2>System Specs</h2>
+      <div class="content">
+        <p>Manage connected devices, network settings, and system parameters.</p>
+      </div>
+    </section>
+    
+    <!-- Notification Preferences -->
+    <section id="notification-preferences">
+      <h2>Notification Preferences</h2>
+      <div class="content">
+        <p>Configure alert settings and choose your preferred notification methods (email, SMS, in-app).</p>
+      </div>
+    </section>
+    
+    <!-- Updates -->
+    <section id="firmware-updates">
+      <h2>Updates</h2>
+      <div class="content">
+        <p>Check for system firmware and app updates, and view version history.</p>
+      </div>
+    </section>
+    
+    <!-- Integration & Advanced Options -->
+    <section id="integrations">
+      <h2>Integration & Advanced Options</h2>
+      <div class="content">
+        <p>Manage third-party integrations, data export options, and perform system resets.</p>
+      </div>
+    </section>
+    
+    <!-- User Interface Customization -->
+    <section id="ui-customization">
+      <h2>User Interface Customization</h2>
+      <div class="content">
+        <p>Customize themes, layouts, language, and accessibility settings.</p>
+      </div>
+    </section>
+    
+    <!-- Logout Section -->
+   
+    <div class="logout-container">
+        <form action="/login.html" method="get">
+          <button type="submit" class="logout">Log Out</button>
+        </form>
+      </div>
+      
+  </main>
+  <footer>
+    <p>&copy; 2025 PawLight Portal Co.</p>
+  </footer>
 </body>
 </html>
