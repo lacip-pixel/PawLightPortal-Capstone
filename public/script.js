@@ -82,3 +82,45 @@ logoutBtn?.addEventListener("click", async () => {
     alert("An error occurred during logout.");
   }
 });
+
+// Door Control Buttons
+const lockBtn = document.getElementById("lockBtn");
+const unlockBtn = document.getElementById("unlockBtn");
+const openBtn = document.getElementById("openBtn");
+const closeBtn = document.getElementById("closeBtn");
+const statusMessage = document.getElementById("statusMessage");
+
+// Base URL for the API (replace with your actual backend URL)
+const API_BASE_URL = "http://localhost:3000/api";
+
+// Function to send a command to the Arduino
+async function sendCommand(command) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/door`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ command }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            statusMessage.textContent = `Command "${command}" sent successfully!`;
+            statusMessage.style.color = "green";
+        } else {
+            statusMessage.textContent = `Error: ${data.message || "Failed to send command"}`;
+            statusMessage.style.color = "red";
+        }
+    } catch (error) {
+        console.error("Error sending command:", error);
+        statusMessage.textContent = "An error occurred while sending the command.";
+        statusMessage.style.color = "red";
+    }
+}
+
+// Add event listeners to buttons
+lockBtn?.addEventListener("click", () => sendCommand("lock"));
+unlockBtn?.addEventListener("click", () => sendCommand("unlock"));
+openBtn?.addEventListener("click", () => sendCommand("open"));
+closeBtn?.addEventListener("click", () => sendCommand("close"));
