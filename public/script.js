@@ -57,3 +57,28 @@ registerBtn?.addEventListener("click", async () => {
         alert(data.message || "Error registering user");
     }
 });
+
+// Logout functionality
+const logoutBtn = document.getElementById("logoutBtn");
+
+logoutBtn?.addEventListener("click", async () => {
+  try {
+    const response = await fetch("/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert(data.message || "Logout successful!");
+      window.location.href = "/login.html"; // Redirect to login page after logout
+    } else {
+      alert(data.message || "Error logging out");
+    }
+  } catch (error) {
+    console.error("Error during logout:", error);
+    alert("An error occurred during logout.");
+  }
+});
