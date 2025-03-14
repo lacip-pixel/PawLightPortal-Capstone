@@ -112,20 +112,60 @@ app.get("/check-auth", (req, res) => {
     }
 });
 
+// Get system specs
+app.get("/get-system-specs", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM SystemSpecs WHERE userid = $1", [req.session.userId]);
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error("Error fetching system specs:", error);
+        res.status(500).json({ message: "Error fetching system specs" });
+    }
+});
+
+// Fetch updates dynamically
+app.get("/get-updates", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM Updates WHERE userid = $1", [req.session.userId]);
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error("Error fetching updates:", error);
+        res.status(500).json({ message: "Error fetching updates" });
+    }
+});
+
+// Update Two-Factor Authentication
+app.post("/update-2fa", async (req, res) => {
+    const { enabled } = req.body;
+    try {
+        await pool.query("UPDATE Users SET twoFactorEnabled = $1 WHERE userid = $2", [enabled, req.session.userId]);
+        res.json({ message: "2FA updated successfully" });
+    } catch (error) {
+        console.error("Error updating 2FA:", error);
+        res.status(500).json({ message: "Error updating 2FA" });
+    }
+});
+
+// Get User Plan & Billing Details
+app.get("/get-user-plan", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT plan, billingDate, billingAmount FROM UserPlans WHERE userid = $1", [req.session.userId]);
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error("Error fetching user plan:", error);
+        res.status(500).json({ message: "Error fetching user plan" });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
 // Simulated API endpoint for door controls
-//THIS WILL BE REWORKED WHEN WE GET THE ARDUINO AND HOST THIS ON A SERVER
 app.post("/api/door", (req, res) => {
     const { command } = req.body;
-
-    // Simulate sending the command to the Arduino
     console.log(`Command received: ${command}`);
-
-    // Simulate a response from the Arduino
     if (["lock", "unlock", "open", "close"].includes(command)) {
         res.status(200).json({ message: `Command "${command}" executed successfully.` });
     } else {
