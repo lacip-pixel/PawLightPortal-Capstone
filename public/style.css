@@ -170,7 +170,103 @@ section h2 {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-
+/* System Specs Grid */
+.spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  /* Toggle Switches */
+  .toggle-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f4f4f9;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .toggle-label input {
+    display: none;
+  }
+  
+  .toggle-switch {
+    width: 40px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 20px;
+    position: relative;
+    transition: 0.3s;
+  }
+  
+  .toggle-label input:checked + .toggle-switch {
+    background: #007bff;
+  }
+  
+  /* Plan Table */
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .plan-table th, .plan-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .plan-table th {
+    background: #007bff;
+    color: white;
+  }
+  
+  .plan-table td {
+    font-weight: bold;
+  }
+  
+  /* Button */
+  .btn-settings {
+    display: block;
+    width: 20%;
+    padding: 10px;
+    background: #41AB5D;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+   /* Ensures checkboxes are aligned to the left */
+.checkbox-container {
+    display: flex;
+    float:left;
+    flex-direction: column;
+    align-items: left; /* Align items to the left */
+  }
+  
+  .checkbox-container label {
+    display: flex;
+    float: left;
+    align-items: left; /* Align checkbox and text */
+    gap: 8px; /* Space between checkbox and text */
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+  }
+  
 /* Logout Button */
 .logout {
     display: inline-block;

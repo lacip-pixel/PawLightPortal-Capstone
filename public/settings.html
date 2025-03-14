@@ -1,127 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings - PawLight Portal</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* Embedded CSS for demonstration. Move these rules to style.css if desired. */
-   
-    body {
-      background: #f4f4f9;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    main {
-    max-width: 800px;
-    margin: 30px auto;
-    padding: 20px;
-  }
-  .content {
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  }
-  </style>
 </head>
 <body>
+
   <header>
-    <!-- Back button linking to the dashboard -->
-    <a href="/index.html" class="back-btn">Back</a>
+    <a href="/index.html" class="back-btn">← BACK</a>
     <h1>Settings</h1>
   </header>
-  <main>
-    <div class="spacer"></div>
-    <div class="spacer"></div>
-    <div class="spacer"></div>
 
-    <!-- User Account & Profile -->
-    <section id="user-account">
-      <h2>User Account & Profile</h2>
-      <div class="content">
-        <p><strong>Name:</strong> John Doe</p>
-        <p><strong>Email:</strong> john.doe@example.com</p>
-        <p>Manage your account information and security settings here.</p>
-      </div>
+  <main>
+    <!-- User Profile -->
+    <section class="settings-card profile-card">
+      <h2>User Profile</h2>
+      <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+      <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+      <p><strong>Pet ID:</strong> <span id="petID">Loading...</span></p>
+      <button class="btn-settings" id="changePassword">Change Password</button>
+
+      <a href="#" class="manage-link">Manage Settings</a>
     </section>
-    
+
     <!-- System Specs -->
-    <section id="system">
+    <section class="settings-card">
       <h2>System Specs</h2>
-      <div class="content">
-        <p><strong>Manufacturer:</strong> PawLight Team</p>
-        <p><strong>Processor:</strong> Cloud-Based Processing (No Local CPU Required)</p>
-        <p><strong>Memory:</strong> N/A (Managed via Cloud Services)</p>
-        <p><strong>Storage:</strong> Secure Cloud Storage for Pet Activity Logs</p>
-        <p><strong>Connectivity:</strong> Wi-Fi 2.4GHz / 5GHz Required</p>
-        <p><strong>Power Source:</strong></p>
-        <ul>
-          <li>Primary: Solar Panel (IP66 Waterproof)</li>
-          <li>Backup: 9V Battery (1300mAh)</li>
-        </ul>
-        <p><strong>Sensors & Authentication:</strong></p>
-        <ul>
-          <li>RFID Tag Reader</li>
-          <li>PIR Motion Sensors</li>
-        </ul>
-        <p><strong>Smart Locking Mechanism:</strong> Motorized Solenoid with Magnetic Latch</p>
-        <p><strong>User Interface:</strong></p>
-        <ul>
-          <li>Web App Compatibility: Google Chrome, Firefox, Safari, Edge</li>
-          <li>Mobile App Compatibility: iOS 14+ / Android 10+</li>
-        </ul>
-        <p><strong>Sound Alerts:</strong> Buzzer for System Notifications</p>
-        <p><strong>Operating System:</strong> Cloud-Based, No Installation Required</p>
-        <p><strong>Control Panel:</strong> Web Portal & Mobile App</p>
-        <p><strong>Installation:</strong> DIY Setup with User Guide</p>
-        <p><strong>Support:</strong> <a href="#">Visit Our Help Center</a></p>
+      <div class="spec-grid">
+        <p><strong>Battery Voltage:</strong> <span id="batteryVoltage">Loading...</span></p>
+        <p><strong>Battery Charge:</strong> <span id="batteryCharge">Loading...</span></p>
+        <p><strong>Solar Panel Output:</strong> <span id="solarOutput">Loading...</span></p>
+        <p><strong>Firmware Version:</strong> <span id="firmwareVersion">1.0.0</span></p>
+        <p><strong>Hardware Status:</strong> <span id="hardwareStatus">Loading...</span></p>
+        <p><strong>Wi-Fi Signal Strength:</strong> <span id="wifiStrength">Loading...</span></p>
+        <p><strong>Uptime:</strong> <span id="uptime">Loading...</span></p>
+        <p><strong>Last Update:</strong> <span id="lastUpdate">Loading...</span></p>
       </div>
     </section>
-    
+
     <!-- Notification Preferences -->
-    <section id="notification-preferences">
+    <section class="settings-card">
       <h2>Notification Preferences</h2>
-      <div class="content">
-        <p>Configure alert settings and choose your preferred notification methods (email, SMS, in-app).</p>
+      <div class="toggle-container">
+        <label class="toggle-label">Door Activity Alerts
+          <input type="checkbox" id="doorActivity">
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-label">System Status Alerts
+          <input type="checkbox" id="systemAlerts">
+          <span class="toggle-switch"></span>
+        </label>
+        <label class="toggle-label">Maintenance Reminders
+          <input type="checkbox" id="maintenance">
+          <span class="toggle-switch"></span>
+        </label>
       </div>
-    </section>
-    
-    <!-- Updates -->
-    <section id="firmware-updates">
-      <h2>Updates</h2>
-      <div class="content">
-        <p>Check for system firmware and app updates, and view version history.</p>
-      </div>
-    </section>
-    
-    <!-- Integration & Advanced Options -->
-    <section id="integrations">
-      <h2>Integration & Advanced Options</h2>
-      <div class="content">
-        <p>Manage third-party integrations, data export options, and perform system resets.</p>
-      </div>
-    </section>
-    
-    <!-- User Interface Customization -->
-    <section id="ui-customization">
-      <h2>User Interface Customization</h2>
-      <div class="content">
-        <p>Customize themes, layouts, language, and accessibility settings.</p>
-      </div>
-    </section>
-          
-   <!-- Logout Section -->
-   <div class="logout-container">
-    <button id="logoutBtn" class="logout">Log Out</button>
-  </div>
+      <p><strong>Notification Delivery:</strong></p>
+  <div class="checkbox-container">
+      <label><input type="checkbox" id="pushNotifications"> Push Notifications</label>
+      <label><input type="checkbox" id="emailNotifications"> Email</label>
+      <label><input type="checkbox" id="textNotifications"> Text</label>
       
+  </div>
+</section>
+<br><br>
+    <!-- Updates -->
+    <section class="settings-card">
+      <h2>Updates</h2>
+      <p><strong>Latest Version:</strong> <span id="updateVersion">Loading...</span></p>
+      <p><strong>Release Date:</strong> <span id="releaseDate">Loading...</span></p>
+      <button class="btn" id="downloadUpdate">Download Update</button>
+    </section>
+
+    <!-- Advanced Options -->
+    <section class="settings-card">
+      <h2>Advanced Options</h2>
+      <a href="#" class="manage-link">Manage Encryption</a>
+      <label class="toggle-label">Two-Factor Authentication
+        <input type="checkbox" id="twoFactor">
+        <span class="toggle-switch"></span>
+      </label>
+    </section>
+
+    <!-- User Plan -->
+    <section class="settings-card">
+      <h2>User Plan</h2>
+      <p><strong>Your Plan:</strong> <span id="userPlan">Premium</span></p>
+
+      <table class="plan-table">
+        <tr>
+          <th>Feature</th>
+          <th>Free</th>
+          <th>Premium</th>
+        </tr>
+        <tr>
+          <td>Basic Functionality</td>
+          <td>✔</td>
+          <td>✔</td>
+        </tr>
+        <tr>
+          <td>Non-Intrusive Ads</td>
+          <td>✔</td>
+          <td>✔</td>
+        </tr>
+        <tr>
+          <td>Pet Tracking</td>
+          <td>✖</td>
+          <td>✔</td>
+        </tr>
+        <tr>
+          <td>Automation Schedule</td>
+          <td>✖</td>
+          <td>✔</td>
+        </tr>
+        <tr>
+          <td>Smart Home Integration</td>
+          <td>✖</td>
+          <td>✔</td>
+        </tr>
+        <tr>
+          <td>Tracking & Automation</td>
+          <td>✖</td>
+          <td>✔</td>
+        </tr>
+      </table>
+      <p><strong>Next Billing Date:</strong> <span id="billingDate">March 1, 2025</span></p>
+      <p><strong>Amount Due:</strong> <span id="billingAmount">$9.99</span></p>
+      <a href="#" class="manage-link">Manage Subscription</a>
+      <a href="#" class="manage-link cancel-link">Cancel Subscription</a>
+    </section>
+
+    <!-- Logout -->
+    <div class="logout-container">
+      <button class="logout" id="logoutBtn">Log Out</button>
+    </div>
   </main>
+
   <footer>
     <p>&copy; 2025 PawLight Portal Co.</p>
   </footer>
+
+  <script src="settings.js"></script>
+
 </body>
 </html>
