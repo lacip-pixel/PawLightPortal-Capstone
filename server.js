@@ -1,5 +1,5 @@
 const express = require("express");
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const path = require("path");
@@ -9,8 +9,7 @@ const app = express();
 
 dotenv.config({ path: "./.env" });
 
-// PostgreSQL connection pool
-const { Client } = require('pg');
+// PostgreSQL connection
 const client = new Client({
   user: 'postgres',
   host: 'localhost',
@@ -18,7 +17,10 @@ const client = new Client({
   password: 'postgres',
   port: 5432,
 });
-client.connect();
+
+client.connect()
+  .then(() => console.log('Connected to PostgreSQL database'))
+  .catch(err => console.error('Error connecting to PostgreSQL database', err));
 
 // Middleware to parse JSON and urlencoded data
 app.use(express.json());
@@ -52,15 +54,14 @@ app.get("/register", (req, res) => {
 
 // Register a new user
 app.post("/register", async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, isAdmin } = req.body;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            "INSERT INTO Users (Username, Password) VALUES ($1, $2) RETURNING *",
-            [username, hashedPassword]
-        );
+        const query = "INSERT INTO users (username, password, isadmin) VALUES ($1, $2, $3) RETURNING *";
+        const values = [username, hashedPassword, isAdmin];
 
+        const result = await client.query(query, values);
         res.status(201).json({ message: "User registered successfully", user: result.rows[0] });
     } catch (error) {
         console.error(error);
@@ -73,15 +74,15 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const result = await pool.query("SELECT * FROM Users WHERE Username = $1", [username]);
+        const result = await client.query("SELECT * FROM users WHERE username = $1", [username]);
         if (result.rows.length > 0) {
             const user = result.rows[0];
             const validPassword = await bcrypt.compare(password, user.password);
 
             if (validPassword) {
-                req.session.userId = user.userid;
+                req.session.userId = user.user_id;
                 req.session.username = user.username;
-                res.status(200).json({ message: "Login successful", user: { id: user.userid, username: user.username } });
+                res.status(200).json({ message: "Login successful", user: { id: user.user_id, username: user.username } });
             } else {
                 res.status(401).json({ message: "Invalid credentials" });
             }
@@ -117,7 +118,7 @@ app.get("/check-auth", (req, res) => {
 // Get system specs
 app.get("/get-system-specs", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM SystemSpecs WHERE userid = $1", [req.session.userId]);
+        const result = await client.query("SELECT * FROM SystemSpecs WHERE user_id = $1", [req.session.userId]);
         res.json(result.rows[0]);
     } catch (error) {
         console.error("Error fetching system specs:", error);
@@ -128,7 +129,7 @@ app.get("/get-system-specs", async (req, res) => {
 // Fetch updates dynamically
 app.get("/get-updates", async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM Updates WHERE userid = $1", [req.session.userId]);
+        const result = await client.query("SELECT * FROM Updates WHERE user_id = $1", [req.session.userId]);
         res.json(result.rows[0]);
     } catch (error) {
         console.error("Error fetching updates:", error);
@@ -140,7 +141,7 @@ app.get("/get-updates", async (req, res) => {
 app.post("/update-2fa", async (req, res) => {
     const { enabled } = req.body;
     try {
-        await pool.query("UPDATE Users SET twoFactorEnabled = $1 WHERE userid = $2", [enabled, req.session.userId]);
+        await client.query("UPDATE users SET twoFactorEnabled = $1 WHERE user_id = $2", [enabled, req.session.userId]);
         res.json({ message: "2FA updated successfully" });
     } catch (error) {
         console.error("Error updating 2FA:", error);
@@ -151,7 +152,7 @@ app.post("/update-2fa", async (req, res) => {
 // Get User Plan & Billing Details
 app.get("/get-user-plan", async (req, res) => {
     try {
-        const result = await pool.query("SELECT plan, billingDate, billingAmount FROM UserPlans WHERE userid = $1", [req.session.userId]);
+        const result = await client.query("SELECT plan, billingDate, billingAmount FROM UserPlans WHERE user_id = $1", [req.session.userId]);
         res.json(result.rows[0]);
     } catch (error) {
         console.error("Error fetching user plan:", error);
