@@ -80,9 +80,9 @@ app.post("/login", async (req, res) => {
             const validPassword = await bcrypt.compare(password, user.password);
 
             if (validPassword) {
-                req.session.userId = user.user_id;
+                req.session.userId = user.userid;
                 req.session.username = user.username;
-                res.status(200).json({ message: "Login successful", user: { id: user.user_id, username: user.username } });
+                res.status(200).json({ message: "Login successful", user: { id: user.userid, username: user.username } });
             } else {
                 res.status(401).json({ message: "Invalid credentials" });
             }
@@ -118,7 +118,7 @@ app.get("/check-auth", (req, res) => {
 // Get system specs
 app.get("/get-system-specs", async (req, res) => {
     try {
-        const result = await client.query("SELECT * FROM SystemSpecs WHERE user_id = $1", [req.session.userId]);
+        const result = await client.query("SELECT * FROM SystemSpecs WHERE userid = $1", [req.session.userId]);
         res.json(result.rows[0]);
     } catch (error) {
         console.error("Error fetching system specs:", error);
@@ -129,7 +129,7 @@ app.get("/get-system-specs", async (req, res) => {
 // Fetch updates dynamically
 app.get("/get-updates", async (req, res) => {
     try {
-        const result = await client.query("SELECT * FROM Updates WHERE user_id = $1", [req.session.userId]);
+        const result = await client.query("SELECT * FROM Updates WHERE userid = $1", [req.session.userId]);
         res.json(result.rows[0]);
     } catch (error) {
         console.error("Error fetching updates:", error);
@@ -141,7 +141,7 @@ app.get("/get-updates", async (req, res) => {
 app.post("/update-2fa", async (req, res) => {
     const { enabled } = req.body;
     try {
-        await client.query("UPDATE users SET twoFactorEnabled = $1 WHERE user_id = $2", [enabled, req.session.userId]);
+        await client.query("UPDATE users SET twoFactorEnabled = $1 WHERE userid = $2", [enabled, req.session.userId]);
         res.json({ message: "2FA updated successfully" });
     } catch (error) {
         console.error("Error updating 2FA:", error);
