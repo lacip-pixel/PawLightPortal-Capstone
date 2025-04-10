@@ -10,13 +10,15 @@ const app = express();
 dotenv.config({ path: "./.env" });
 
 // PostgreSQL connection pool
-const pool = new Pool({
-    user: process.env.DATABASE_USER || "postgres",
-    host: process.env.DATABASE_HOST || "localhost",
-    database: process.env.DATABASE || "PawlightPortal",
-    password: process.env.DATABASE_PASSWORD || "postgres",
-    port: process.env.DATABASE_PORT || 5432,
+const { Client } = require('pg');
+const client = new Client({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'PawlightPortal',
+  password: 'postgres',
+  port: 5432,
 });
+client.connect();
 
 // Middleware to parse JSON and urlencoded data
 app.use(express.json());
