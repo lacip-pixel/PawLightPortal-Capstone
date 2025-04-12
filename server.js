@@ -162,7 +162,7 @@ app.get("/get-user-plan", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 80;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server running on Port:${PORT}`);
 }); 
 // arduiono stuff
