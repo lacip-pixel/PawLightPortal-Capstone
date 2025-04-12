@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 const session = require("express-session");
+const WebSocket = require('ws');
 
 const app = express();
 
@@ -163,14 +164,56 @@ app.get("/get-user-plan", async (req, res) => {
 const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
     console.log(`Server running on Port:${PORT}`);
+}); 
+// arduiono stuff
+const wss = new WebSocket.Server({ server });
+const arduinoClients = new Set();
+wss.on('connection', (ws) => {
+    console.log('New client connected');
+    
+    // Identify Arduino clients (you might want a more secure authentication)
+    ws.on('message', (message) => {
+        const data = JSON.parse(message);
+        if (data.type === 'arduino_identify') {
+            arduinoClients.add(ws);
+            console.log('Arduino R4 connected');
+        }
+    });
+
+    ws.on('close', () => {
+        arduinoClients.delete(ws);
+        console.log('Client disconnected');
+    });
 });
 
-// Simulated API endpoint for door controls
+// Function to send commands to Arduino
+function sendToArduino(command) {
+    if (arduinoClients.size === 0) {
+        console.log('No Arduino clients connected');
+        return false;
+    }
+    
+    const message = JSON.stringify({ type: 'command', command });
+    arduinoClients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+    return true;
+}
+
+// door commands
 app.post("/api/door", (req, res) => {
     const { command } = req.body;
     console.log(`Command received: ${command}`);
+    
     if (["lock", "unlock", "open", "close"].includes(command)) {
-        res.status(200).json({ message: `Command "${command}" executed successfully.` });
+        const sent = sendToArduino(command);
+        if (sent) {
+            res.status(200).json({ message: `Command "${command}" sent to Arduino successfully.` });
+        } else {
+            res.status(503).json({ message: "No Arduino devices connected" });
+        }
     } else {
         res.status(400).json({ message: "Invalid command" });
     }
