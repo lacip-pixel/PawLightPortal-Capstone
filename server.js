@@ -167,60 +167,56 @@ const server = app.listen(PORT, () => {
 }); 
 
 
-// arduiono stuff
-const wss = new WebSocket.Server({ server });
-const arduinoClients = new Set();
+// ============== WebSocket Client to Arduino ==============
+const ARDUINO_WS_URL = "ws://10.160.0.214:80";
+let arduinoSocket;
 
-const ARDUINO_WS_URL = "ws://10.160.0.214:80"; // IP and port
+function connectToArduino() {
+    arduinoSocket = new WebSocket(ARDUINO_WS_URL);
 
-const arduinoSocket = new WebSocket(ARDUINO_WS_URL);
-
-
-wss.on('connection', (ws) => {
-    console.log('New client connected');
-    
-    // Identify Arduino clients (you might want a more secure authentication)
-    ws.on('message', (message) => {
-        const data = JSON.parse(message);
-        if (data.type === 'arduino_identify') {
-            arduinoClients.add(ws);
-            console.log('Arduino R4 connected');
-        }
+    arduinoSocket.on('open', () => {
+        console.log('Connected to Arduino WebSocket server');
     });
 
-    ws.on('close', () => {
-        arduinoClients.delete(ws);
-        console.log('Client disconnected');
+    arduinoSocket.on('message', (data) => {
+        console.log('Message from Arduino:', data);
     });
-});
 
-// Function to send commands to Arduino
-function sendToArduino(command) {
-    if (arduinoClients.size === 0) {
-        console.log('No Arduino clients connected');
-        return false;
-    }
-    
-    const message = JSON.stringify({ type: 'command', command });
-    arduinoClients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
+    arduinoSocket.on('close', () => {
+        console.log('Connection to Arduino closed. Reconnecting in 5 seconds...');
+        setTimeout(connectToArduino, 5000); // retry connection
     });
-    return true;
+
+    arduinoSocket.on('error', (err) => {
+        console.error('WebSocket error with Arduino:', err.message);
+    });
 }
 
-// door commands
+connectToArduino();
+
+// Send command to Arduino
+function sendToArduino(command) {
+    if (arduinoSocket && arduinoSocket.readyState === WebSocket.OPEN) {
+        const message = JSON.stringify({ type: 'command', command });
+        arduinoSocket.send(message);
+        return true;
+    } else {
+        console.log('Arduino WebSocket not connected');
+        return false;
+    }
+}
+
+// ============== API to Send Door Commands ==============
 app.post("/api/door", (req, res) => {
     const { command } = req.body;
     console.log(`Command received: ${command}`);
-    
+
     if (["lock", "unlock", "open", "close"].includes(command)) {
         const sent = sendToArduino(command);
         if (sent) {
             res.status(200).json({ message: `Command "${command}" sent to Arduino successfully.` });
         } else {
-            res.status(503).json({ message: "No Arduino devices connected" });
+            res.status(503).json({ message: "Arduino is not connected" });
         }
     } else {
         res.status(400).json({ message: "Invalid command" });
