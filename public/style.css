@@ -12,10 +12,6 @@ body {
     height: 100vh;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #333;
 }
@@ -101,41 +97,49 @@ input {
 
 /* Header Styles */
 header {
-    background: forestgreen;
-    color: #fff;
-    top:0;
-    padding: 20px 0;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    width:100%
+  background: forestgreen;
+  color: white;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
+/* This centers the title even with content on the sides */
 header h1 {
-    margin: 0;
-    font-size: 2em;
+  margin: 0;
+  font-size: 1.5em;
+  text-align: center;
+  width: 100%;
+  pointer-events: none; /* Prevents blocking clicks on other elements like the button */
 }
 
-/* Back Button */
+/* Back button stays pinned left, without affecting centering */
 .back-btn {
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #006400;
-    color: #fff;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.9em;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #006400;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  z-index: 2;
 }
 
 .back-btn:hover {
-    background: #004d00;
+  background: #004d00;
 }
+
 .spacer {
     height: 400px; 
   }
@@ -146,7 +150,7 @@ main {
     padding: 20px;
     max-width: 800px;
     width: 90%;
-    margin: 30px auto;
+    margin: 80px auto 30px auto;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
