@@ -90,8 +90,8 @@ const openBtn = document.getElementById("openBtn");
 const closeBtn = document.getElementById("closeBtn");
 const statusMessage = document.getElementById("statusMessage");
 
-// Base URL for the API (replace with your actual backend URL)
-const API_BASE_URL = "http://localhost:3000/api";
+// Base URL for the API 
+const API_BASE_URL = "http://3.132.229.82";
 
 // Function to send a command to the Arduino
 async function sendCommand(command) {

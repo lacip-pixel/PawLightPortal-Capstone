@@ -165,9 +165,17 @@ const PORT = process.env.PORT || 80;
 const server = app.listen(PORT, () => {
     console.log(`Server running on Port:${PORT}`);
 }); 
+
+
 // arduiono stuff
 const wss = new WebSocket.Server({ server });
 const arduinoClients = new Set();
+
+const ARDUINO_WS_URL = "ws://10.160.0.214:80"; // IP and port
+
+const arduinoSocket = new WebSocket(ARDUINO_WS_URL);
+
+
 wss.on('connection', (ws) => {
     console.log('New client connected');
     
