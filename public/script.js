@@ -96,10 +96,11 @@ const API_BASE_URL = "http://3.132.229.82";
 // Function to send a command to the Arduino
 async function sendCommand(command) {
     try {
-        const response = await fetch(`${API_BASE_URL}/door`, {
+        const response = await fetch(`${API_BASE_URL}/api/door`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "application/json"
             },
             body: JSON.stringify({ command }),
         });
