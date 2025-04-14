@@ -6,219 +6,151 @@ const path = require("path");
 const session = require("express-session");
 const WebSocket = require('ws');
 
+// Initialize Express app
 const app = express();
 
+// Load environment variables
 dotenv.config({ path: "./.env" });
 
 // PostgreSQL connection
 const client = new Client({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'PawlightPortal',
-  password: 'postgres',
-  port: 5432,
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'PawlightPortal',
+  password: process.env.DB_PASSWORD || 'postgres',
+  port: process.env.DB_PORT || 5432,
 });
 
 client.connect()
   .then(() => console.log('Connected to PostgreSQL database'))
   .catch(err => console.error('Error connecting to PostgreSQL database', err));
 
-// Middleware to parse JSON and urlencoded data
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Session middleware
 app.use(
-    session({
-        secret: "your_secret_key",
-        resave: false,
-        saveUninitialized: true,
-        cookie: { secure: false }, // Set to true if using HTTPS
-    })
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'strict'
+    }
+  })
 );
-
-// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Routes
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "login.html"));
-});
-
-app.get("/register", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "register.html"));
-});
-
-// Register a new user
-app.post("/register", async (req, res) => {
-    const { username, password, isAdmin } = req.body;
-
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const query = "INSERT INTO users (username, password, isadmin) VALUES ($1, $2, $3) RETURNING *";
-        const values = [username, hashedPassword, isAdmin];
-
-        const result = await client.query(query, values);
-        res.status(201).json({ message: "User registered successfully", user: result.rows[0] });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error registering user" });
-    }
-});
-
-// Login user
-app.post("/login", async (req, res) => {
-    const { username, password } = req.body;
-
-    try {
-        const result = await client.query("SELECT * FROM users WHERE username = $1", [username]);
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            const validPassword = await bcrypt.compare(password, user.password);
-
-            if (validPassword) {
-                req.session.userId = user.userid;
-                req.session.username = user.username;
-                res.status(200).json({ message: "Login successful", user: { id: user.userid, username: user.username } });
-            } else {
-                res.status(401).json({ message: "Invalid credentials" });
-            }
-        } else {
-            res.status(404).json({ message: "User not found" });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error logging in" });
-    }
-});
-
-// Logout user
-app.post("/logout", (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).json({ message: "Error logging out" });
-        }
-        res.clearCookie("connect.sid");
-        res.status(200).json({ message: "Logout successful" });
-    });
-});
-
-// Check if user is authenticated
-app.get("/check-auth", (req, res) => {
-    if (req.session.userId) {
-        res.status(200).json({ authenticated: true, user: { id: req.session.userId, username: req.session.username } });
-    } else {
-        res.status(401).json({ authenticated: false });
-    }
-});
-
-// Get system specs
-app.get("/get-system-specs", async (req, res) => {
-    try {
-        const result = await client.query("SELECT * FROM SystemSpecs WHERE userid = $1", [req.session.userId]);
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error("Error fetching system specs:", error);
-        res.status(500).json({ message: "Error fetching system specs" });
-    }
-});
-
-// Fetch updates dynamically
-app.get("/get-updates", async (req, res) => {
-    try {
-        const result = await client.query("SELECT * FROM Updates WHERE userid = $1", [req.session.userId]);
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error("Error fetching updates:", error);
-        res.status(500).json({ message: "Error fetching updates" });
-    }
-});
-
-// Update Two-Factor Authentication
-app.post("/update-2fa", async (req, res) => {
-    const { enabled } = req.body;
-    try {
-        await client.query("UPDATE users SET twoFactorEnabled = $1 WHERE userid = $2", [enabled, req.session.userId]);
-        res.json({ message: "2FA updated successfully" });
-    } catch (error) {
-        console.error("Error updating 2FA:", error);
-        res.status(500).json({ message: "Error updating 2FA" });
-    }
-});
-
-// Get User Plan & Billing Details
-app.get("/get-user-plan", async (req, res) => {
-    try {
-        const result = await client.query("SELECT plan, billingDate, billingAmount FROM UserPlans WHERE user_id = $1", [req.session.userId]);
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error("Error fetching user plan:", error);
-        res.status(500).json({ message: "Error fetching user plan" });
-    }
-});
-
+// Create HTTP server
 const PORT = process.env.PORT || 80;
 const server = app.listen(PORT, () => {
-    console.log(`Server running on Port:${PORT}`);
-}); 
+  console.log(`HTTP server running on Port:${PORT}`);
+});
 
+// ============== WebSocket Server ==============
+const wss = new WebSocket.Server({ 
+  server,
+  path: "/ws" // WebSocket endpoint
+});
 
-// ============== WebSocket Client to Arduino ==============
-const ARDUINO_WS_URL = "ws://10.160.0.214:80";
-let arduinoSocket;
+// Track connected Arduino clients
+const arduinoClients = new Set();
 
-function connectToArduino() {
-    arduinoSocket = new WebSocket(ARDUINO_WS_URL);
+wss.on('connection', (ws) => {
+  console.log('New WebSocket connection');
+  arduinoClients.add(ws);
 
-    arduinoSocket.on('open', () => {
-        console.log('Connected to Arduino WebSocket server');
-    });
-
-    arduinoSocket.on('message', (data) => {
-        console.log('Message from Arduino:', data);
-    });
-
-    arduinoSocket.on('close', () => {
-        console.log('Connection to Arduino closed. Reconnecting in 5 seconds...');
-        setTimeout(connectToArduino, 5000); // retry connection
-    });
-
-    arduinoSocket.on('error', (err) => {
-        console.error('WebSocket error with Arduino:', err.message);
-    });
-}
-
-connectToArduino();
-
-// Send command to Arduino
-function sendToArduino(command) {
-    if (arduinoSocket && arduinoSocket.readyState === WebSocket.OPEN) {
-        const message = JSON.stringify({ type: 'command', command });
-        arduinoSocket.send(message);
-        return true;
-    } else {
-        console.log('Arduino WebSocket not connected');
-        return false;
+  ws.on('message', (message) => {
+    console.log(`Received from Arduino: ${message}`);
+    
+    try {
+      const data = JSON.parse(message);
+      
+      // Handle Arduino identification
+      if (data.type === 'arduino_identify') {
+        ws.send(JSON.stringify({ 
+          status: 'identified',
+          message: 'Connection established with server'
+        }));
+      }
+      
+      // Handle access events
+      if (data.type === 'access') {
+        console.log(`Access ${data.status} for UID: ${data.uid}`);
+        // You could store this in your database
+      }
+    } catch (err) {
+      console.error('Error processing WebSocket message:', err);
     }
-}
+  });
 
-// ============== API to Send Door Commands ==============
+  ws.on('close', () => {
+    console.log('Arduino disconnected');
+    arduinoClients.delete(ws);
+  });
+
+  ws.on('error', (err) => {
+    console.error('WebSocket error:', err);
+  });
+});
+
+// ============== API Endpoints ==============
+
+// Door command endpoint
 app.post("/api/door", (req, res) => {
-    const { command } = req.body;
-    console.log(`Command received: ${command}`);
+  // Check authentication
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
 
-    if (["lock", "unlock", "open", "close"].includes(command)) {
-        const sent = sendToArduino(command);
-        if (sent) {
-            res.status(200).json({ message: `Command "${command}" sent to Arduino successfully.` });
-        } else {
-            res.status(503).json({ message: "Arduino is not connected" });
-        }
-    } else {
-        res.status(400).json({ message: "Invalid command" });
+  const { command } = req.body;
+  const validCommands = ["lock", "unlock", "open", "close"];
+
+  // Validate command
+  if (!validCommands.includes(command)) {
+    return res.status(400).json({ success: false, message: "Invalid command" });
+  }
+
+  // Send to all connected Arduinos
+  let sentCount = 0;
+  arduinoClients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ command }));
+      sentCount++;
     }
+  });
+
+  if (sentCount > 0) {
+    res.json({ 
+      success: true,
+      message: `Command "${command}" sent to ${sentCount} device(s)`
+    });
+  } else {
+    res.status(503).json({ 
+      success: false,
+      message: "No Arduino devices connected"
+    });
+  }
+});
+
+// Connection status endpoint
+app.get("/api/connection-status", (req, res) => {
+  const status = {
+    connectedDevices: arduinoClients.size,
+    serverTime: new Date().toISOString(),
+    activeConnections: Array.from(arduinoClients).map(ws => ({
+      readyState: ws.readyState // 1 = OPEN, 0 = CONNECTING, etc.
+    }))
+  };
+  res.json(status);
+});
+
+// ============== Authentication Routes ==============
+// (Keep your existing auth routes from previous implementation)
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: "Internal server error" });
 });
