@@ -168,7 +168,7 @@ const server = app.listen(PORT, () => {
 
 
 // ============== WebSocket Client to Arduino ==============
-const ARDUINO_WS_URL = "ws://10.160.0.214:80";
+const ARDUINO_WS_URL = "ws://10.160.0.214:8080";
 let arduinoSocket;
 
 function connectToArduino() {
