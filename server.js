@@ -167,57 +167,37 @@ const server = app.listen(PORT, () => {
 }); 
 
 
-// ============== WebSocket Client to Arduino ==============
-const ARDUINO_WS_URL = "ws://10.160.0.214:8080";
-let arduinoSocket;
+// ============== HTTP Endpoints for Arduino Communication ==============
 
-function connectToArduino() {
-    arduinoSocket = new WebSocket(ARDUINO_WS_URL);
+// Store the last command for the Arduino to poll
+let lastCommand = null;
 
-    arduinoSocket.on('open', () => {
-        console.log('Connected to Arduino WebSocket server');
-    });
-
-    arduinoSocket.on('message', (data) => {
-        console.log('Message from Arduino:', data);
-    });
-
-    arduinoSocket.on('close', () => {
-        console.log('Connection to Arduino closed. Reconnecting in 5 seconds...');
-        setTimeout(connectToArduino, 5000); // retry connection
-    });
-
-    arduinoSocket.on('error', (err) => {
-        console.error('WebSocket error with Arduino:', err.message);
-    });
-}
-
-connectToArduino();
-
-// Send command to Arduino
-function sendToArduino(command) {
-    if (arduinoSocket && arduinoSocket.readyState === WebSocket.OPEN) {
-        const message = JSON.stringify({ type: 'command', command });
-        arduinoSocket.send(message);
-        return true;
+// Endpoint for Arduino to check for commands
+app.get("/api/arduino/command", (req, res) => {
+    if (lastCommand) {
+        res.json({ command: lastCommand });
+        lastCommand = null; // Clear after sending
     } else {
-        console.log('Arduino WebSocket not connected');
-        return false;
+        res.status(204).end(); // No content
     }
-}
+});
 
-// ============== API to Send Door Commands ==============
+// Endpoint for Arduino to send RFID events
+app.post("/api/arduino/rfid", express.json(), (req, res) => {
+    const { uid, status } = req.body;
+    console.log(`RFID event: UID ${uid}, status ${status}`);
+    // Here you could store in database or process further
+    res.status(200).json({ message: "RFID event received" });
+});
+
+// Modified door command endpoint (now stores command instead of WebSocket)
 app.post("/api/door", (req, res) => {
     const { command } = req.body;
     console.log(`Command received: ${command}`);
 
     if (["lock", "unlock", "open", "close"].includes(command)) {
-        const sent = sendToArduino(command);
-        if (sent) {
-            res.status(200).json({ message: `Command "${command}" sent to Arduino successfully.` });
-        } else {
-            res.status(503).json({ message: "Arduino is not connected" });
-        }
+        lastCommand = command;
+        res.status(200).json({ message: `Command "${command}" stored for Arduino` });
     } else {
         res.status(400).json({ message: "Invalid command" });
     }
